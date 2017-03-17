@@ -1,0 +1,26 @@
+@import "config.variables";
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-button {
+  display: none;
+  height: 0;
+  width: 0;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.16);
+  -webkit-box-shadow: inset 1px 1px 0 rgba(0, 0, 0, 0.16), inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+}
+
+::-webkit-scrollbar-track {
+  border-top: 0 solid transparent;
+  border-bottom: 0 solid transparent;
+  background-clip: padding-box;
+}

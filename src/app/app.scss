@@ -1,0 +1,38 @@
+@import "common/config.variables";
+@import "common/common";
+
+.app {
+  &__loader {
+    z-index: 2;
+
+    &-bar {
+      z-index: 11;
+      position: absolute;
+      top: 0;
+    }
+  }
+
+  &__header {
+    z-index: 3;
+    position: relative;
+
+    .md-toolbar-tools {
+      margin: 0 auto;
+      a {
+        color: white;
+      }
+    }
+
+    .co-logotype {
+      margin: 0 35px -6px 0;
+    }
+  }
+
+  &__body {
+    z-index: 1;
+    position: relative;
+    padding: $md-gutter / 2;
+  }
+
+  &__footer {}
+}

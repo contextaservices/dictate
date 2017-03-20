@@ -1,0 +1,37 @@
+<div class="container">
+
+  <span ng-class="{'highlight': $ctrl.workersAvailableNumber === 0}">
+    Number of available workers: {{ $ctrl.workersAvailableNumber }}
+  </span>
+
+  <md-button ng-click="$ctrl.toggleListening();" ng-disabled="($ctrl.workersAvailableNumber === 0 && !$ctrl.isConnected) || $ctrl.status === 'end' || $ctrl.status === 'speech-end'">
+    <span ng-show="$ctrl.status === 'speech-end'">Stopping...</span>
+    <span ng-show="$ctrl.status === 'end'">Start</span>
+    <span ng-show="$ctrl.status === 'speech-ready'">Stop</span>
+    <md-tooltip>Starts/stops listening for speech.</md-tooltip>
+  </md-button>
+  <md-button ng-click="$ctrl.cancel()" ng-disabled="$ctrl.status === 'end'">
+    Cancel
+    <md-tooltip>Cancels the speech recognition</md-tooltip>
+  </md-button>
+  <md-button ng-click="$ctrl.clearTranscription()">
+    Clear
+    <md-tooltip>Clears the transcription</md-tooltip>
+  </md-button>
+
+  <md-input-container class="md-block">
+    <label>Transcription</label>
+    <textarea id="trans" ng-model="$ctrl.transcription" rows="5"></textarea>
+  </md-input-container>
+
+  <md-input-container>
+    <label>Server</label>
+    <md-select
+      ng-model="$ctrl.server"
+      name="server">
+      <md-option ng-value="server" ng-repeat="server in $ctrl.servers" ng-click="$ctrl.changeServer(server)">{{:: server.name }}</md-option>
+    </md-select>
+  </md-input-container>
+
+  <pre>{{ $ctrl.message }}</pre>
+</div>

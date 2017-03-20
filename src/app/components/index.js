@@ -1,17 +1,8 @@
 import angular from 'angular';
-import Home from './home';
-import Login from './login';
-import Overstappen from './overstappen';
-import Nuon from './nuon';
+import Dictate from './dictate';
 
 let module = angular.module('app.components', [
-  // Shared
-  Home,
-  Login,
-  // Overstappen
-  Overstappen,
-  // NUon
-  Nuon,
+  Dictate
 ])
 
 .name;

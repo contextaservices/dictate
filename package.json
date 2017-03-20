@@ -65,6 +65,8 @@
     "angular-sanitize": "^1.6.1",
     "angular-ui-router": "^1.0.0-rc.1",
     "d3": "^4.5.0",
+    "jquery": "^3.2.0",
+    "ng-file-upload": "^12.2.13",
     "wavesurfer.js": "^1.2.8",
     "xml2js": "^0.4.17",
     "zenscroll": "^3.3.0"

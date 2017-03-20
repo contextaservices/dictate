@@ -2,92 +2,9 @@
 
 @import "config.variables";
 @import "vendor.angular-material";
-@import "vendor.angular-data-grid";
-@import "vendor.angular-material-data-table";
-@import "component.pane";
+// @import "component.pane";
 @import "element.scrollbar";
 
 body {
   font-family: 'Source Sans Pro', sans-serif;
-}
-
-.co--card__icon {
-  display: flex;
-  align-items: center;
-  align-content: center;
-  height: 56px;
-  width: 56px;
-  margin: 6px 12px 0 6px;
-  border-radius: 100%;
-  background: $CO--brand-light;
-
-  & .md-button,
-  & .md-button.md-fab {
-    height: 56px;
-    width: 56px;
-    margin: 0;
-  }
-
-  &--small {
-    margin-top: 7px;
-    height: 36px;
-    width: 36px;
-
-    & .md-button,
-    & .md-button.md-fab {
-      height: 36px;
-      width: 36px;
-    }
-  }
-}
-
-.md-subhead.description {
-  line-height: 1.4em;
-}
-
-.error,
-.error a {
-  color: $md-color-danger;
-}
-
-.text-light {
-  color: $md-light-text;
-}
-
-.loader {
-  .text-light {
-    padding-left: 5px;
-    text-transform: uppercase;
-  }
-}
-
-// tweak md-nav-bar to wok inside md-toolbar(-tools)
-md-toolbar .md-nav-bar {
-  // height: 100%;
-  height: 65px;
-
-  .md-button {
-    line-height: 41px;
-
-    &.md-unselected {
-      color: white;
-      opacity: .7;
-    }
-  }
-
-  // special treatment for logo tab
-  .logo .md-button {
-    line-height: 1;
-    padding-top: 12px;
-    padding-bottom: 8px;
-
-    &.md-unselected {
-      opacity: 1;
-    }
-  }
-}
-
-// make the spinner white inside accent button
-.md-accent.md-button md-progress-circular path {
-  stroke: rgba(255,255,255,0.87);
 }

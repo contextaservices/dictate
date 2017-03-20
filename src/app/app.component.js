@@ -4,10 +4,7 @@ import './app.scss';
 
 let appComponent = {
   restrict: 'E',
-  bindings: {
-    // navCurrent: '@',
-    isAuthenticated: '=?'
-  },
+  bindings: {},
   template,
   controller
 };

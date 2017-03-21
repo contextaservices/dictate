@@ -1,5 +1,3 @@
-// import $ from 'jquery';
-
 (function(window){
 
   var WORKER_PATH = 'recorderWorker.js';

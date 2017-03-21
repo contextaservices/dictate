@@ -36,3 +36,9 @@
 
   &__footer {}
 }
+
+.home {
+  &__card > md-content {
+    background: #fff;
+  }
+}

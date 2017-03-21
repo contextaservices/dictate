@@ -4,10 +4,10 @@
 //
 //
 //
-//add 45 minutes of work!!!!!!!!!!!!! migration to angular
-//
-//
-//
+// add 45 minutes of work!!!!!!!!!!!!! migration to angular
+// add 20 minutes setup ng-file-upload
+// add 85 minutes understanding dictate codebase and trying upload audio as blob url
+// add 13:53
 //
 //
 //
@@ -18,13 +18,54 @@ import $ from 'jquery/dist/jquery';
 import './dictate';
 import './recorder';
 
+// FileAPI = {
+//   debug: true,
+//   //forceLoad: true, html5: false //to debug flash in HTML5 browsers
+//   //wrapInsideDiv: true, //experimental for fixing css issues
+//   //only one of jsPath or jsUrl.
+//   //jsPath: '/js/FileAPI.min.js/folder/',
+//   //jsUrl: 'yourcdn.com/js/FileAPI.min.js',
+
+//   //only one of staticPath or flashUrl.
+//   //staticPath: '/flash/FileAPI.flash.swf/folder/'
+//   //flashUrl: 'yourcdn.com/js/FileAPI.flash.swf'
+// };
+
 class Controller {
 
-  constructor ($rootScope, $element) {
+  constructor (Upload) {
     'ngInject';
 
+    this._$upload = Upload;
+
     // this._$rootScope = $rootScope;
-    this.__container = $element[0];
+    this.file = {};
+    this.files = [];
+    this.invalidFiles = [];
+    this.bile = {};
+    this.biles = [];
+
+    this.conf = {
+      accept: 'audio/*',
+      pattern: 'audio/*',
+      multiple: false,
+      disabled: false,
+      // capture: 'recorder??'
+      keepDistinct: true,
+      maxFiles: 1,
+      // ignoreInvalid: false,
+      runAllValidations: true,
+      allowDir: true,
+      duration: ($file, $duration) => {
+        return $duration < 10000; // @@todo
+      },
+      modelOptions: {
+        debounce: 100 // @@todo
+      },
+      validate: {}, // @@todo
+      isResumeSupported: true,
+      usingFlash: FileAPI && FileAPI.upload !== null,
+    }
 
     this.servers = [{
       name: 'Nederlands',
@@ -32,12 +73,12 @@ class Controller {
       status: 'wss://kalditest.westeurope.cloudapp.azure.com:8888/client/ws/status'
     }, {
       name: 'English',
-      speech: 'wss://bark.phon.ioc.ee:8443/dev/duplex-speech-api/ws/speech',
-      status: 'wss://bark.phon.ioc.ee:8443/dev/duplex-speech-api/ws/status'
+      speech: 'ws://bark.phon.ioc.ee:8443/english/duplex-speech-api/ws/speech',
+      status: 'ws://bark.phon.ioc.ee:8443/english/duplex-speech-api/ws/status'
     }, {
       name: 'Eesti keel',
-      speech: 'wss://bark.phon.ioc.ee:8443/english/duplex-speech-api/ws/speech',
-      status: 'wss://bark.phon.ioc.ee:8443/english/duplex-speech-api/ws/status'
+      speech: 'wss://bark.phon.ioc.ee:8443/dev/duplex-speech-api/ws/speech',
+      status: 'wss://bark.phon.ioc.ee:8443/dev/duplex-speech-api/ws/status'
     }];
 
     this.server = this.servers[0];
@@ -70,7 +111,7 @@ class Controller {
     this._dictate = new Dictate({
       server: this.server.speech,
       serverStatus: this.server.status,
-      recorderWorkerPath: '../lib/recorderWorker.js', // @@todo
+      recorderWorkerPath: '../recorder-worker.js', // @@todo
       onReadyForSpeech: () => {
         this.isConnected = true;
         this.status = 'speech-ready';
@@ -132,6 +173,9 @@ class Controller {
       },
       onEvent: (code, data) => {
         this._message(code, data);
+      },
+      getAudioBlob: () => {
+        return this.file.src;
       }
     });
 
@@ -200,6 +244,34 @@ class Controller {
     text = text.replace(/ ([,.!?:;])/g,  "\$1");
     text = text.replace(/ ?\n ?/g,  "\n");
     return text;
+  }
+
+  /**
+   * Upload file
+   *
+   * @param {Object} File
+   */
+  upload (file) {
+  }
+
+  /**
+   * Restart file upload
+   *
+   * @param {Object} File
+   */
+  uploadRestart (file) {
+
+  }
+
+
+  onFileSelect () {
+    // debugger;
+    this.file.src = URL.createObjectURL(this.files[0]);
+    // not really needed in this exact case, but since it is really important in other cases,
+    // don't forget to revoke the blobURI when you don't need it
+    // sound.onend = function(e) {
+    //   URL.revokeObjectURL(this.src);
+    // }
   }
 }
 

@@ -1,5 +1,3 @@
-// import $ from 'jquery';
-
 (function(window){
 
   // Defaults
@@ -58,6 +56,8 @@
     config.onEvent = config.onEvent || function(e, data) {};
     config.onError = config.onError || function(e, data) {};
     config.rafCallback = config.rafCallback || function(time) {};
+    config.audioSourceIsMic = config.audioSourceIsMic || true;
+    config.getAudioBlob = config.getAudioBlob || function () {};
     if (config.onServerStatus) {
       monitorServerStatus();
     }
@@ -82,10 +82,15 @@
     // TODO: call something on success (MSG_INIT_RECORDER is currently called)
     this.init = function() {
       var audioSourceConstraints = {};
+      var _getUserMedia;
       config.onEvent(MSG_WAITING_MICROPHONE, "Waiting for approval to access your microphone ...");
       try {
+        if (MediaDevices && MediaDevices.getUserMedia) {
+          navigator.getUserMedia = MediaDevices.getUserMedia;
+        } else {
+          navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+        }
         window.AudioContext = window.AudioContext || window.webkitAudioContext;
-        navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
         window.URL = window.URL || window.webkitURL;
         audioContext = new AudioContext();
       } catch (e) {
@@ -282,10 +287,14 @@
       // Start recording only if the socket becomes open
       ws.onopen = function(e) {
         intervalKey = setInterval(function() {
-          recorder.export16kMono(function(blob) {
-            socketSend(blob);
-            recorder.clear();
-          }, 'audio/x-raw');
+          if (config.audioSourceIsMic) {
+            recorder.export16kMono(function(blob) {
+              socketSend(blob);
+              recorder.clear();
+            }, 'audio/x-raw');
+          } else {
+            socketSend(config.getAudioBlob());
+          }
         }, config.interval);
         // Start recording
         recorder.record();

@@ -1,3 +1,0 @@
-[submodule "config/dev-lib"]
-	path = config/dev-lib
-	url = git@gitlab.com:kuus/dev-lib

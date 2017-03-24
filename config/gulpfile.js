@@ -1,21 +1,16 @@
 // generated on 2017-01-05 using generator-kuus-webapp 2.2.0
 const gulp = require('gulp');
-const gulpLoadPlugins = require('gulp-load-plugins');
 const path = require('path');
+const util = require('gulp-util');
 const browserSync = require('browser-sync');
-const lazypipe = require('lazypipe');
-const minimist = require('minimist');
 const colorsSupported = require('supports-color');
 const webpack = require('webpack');
+const reload = browserSync.reload;
+const pkg = require('../package.json');
 
 const paths = require('./dev-lib/paths');
-
-const pkg = require('../package.json');
-const $ = gulpLoadPlugins();
-const reload = browserSync.reload;
-const argv = minimist(process.argv.slice(2));
-
 const clean = require('./dev-lib/gulp/clean');
+const serveDist = require('./dev-lib/gulp/serve-dist');
 const images = require('./dev-lib/gulp/images');
 const extras = require('./dev-lib/gulp/extras');
 const ngComponent = require('./dev-lib/gulp/ng-component');
@@ -31,19 +26,6 @@ gulp.task(watch);
 gulp.task('build', gulp.series(clean, ngSvgIcons, gulp.parallel(buildWebpack, images, extras/*, styles*/)/*, optimize*/));
 gulp.task('serve', gulp.series('build', gulp.parallel(/*views, styles, scripts, modernizr, fonts*/), watch));
 gulp.task('default', gulp.task('serve'));
-
-
-function server (baseDir, routes) {
-  browserSync({
-    notify: false,
-    port: 9000,
-    open: (!!argv.o || !!argv.open) || false,
-    server: {
-      baseDir: baseDir,
-      routes: routes
-    }
-  });
-}
 
 function watch () {
   serverWebpack(); // @@extra \\
@@ -62,10 +44,6 @@ function watch () {
   gulp.watch(`${paths.SRC}/images/icons/**/*.svg`).on('all', ngSvgIcons); // @@extra \\
 }
 
-function serveDist() {
-  server(`${paths.DIST}`);
-}
-
 // use webpack.config.js to build modules
 function buildWebpack (cb) {
   const config = require('./dev-lib/webpack/config.dist');
@@ -73,10 +51,10 @@ function buildWebpack (cb) {
 
   webpack(config, (err, stats) => {
     if(err)  {
-      throw new $.util.PluginError('webpack', err);
+      throw new util.PluginError('webpack', err);
     }
 
-    $.util.log('[webpack]', stats.toString({
+    util.log('[webpack]', stats.toString({
       colors: colorsSupported,
       chunks: false,
       errorDetails: true

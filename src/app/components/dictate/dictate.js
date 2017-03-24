@@ -57,7 +57,7 @@
     config.onEvent = config.onEvent || function(e, data) {};
     config.onError = config.onError || function(e, data) {};
     config.rafCallback = config.rafCallback || function(time) {};
-    config.audioUploaded = config.audioUploaded || false;
+    config.upload = config.upload || false;
     config.getAudioBlob = config.getAudioBlob || function () {};
     if (config.onServerStatus) {
       monitorServerStatus();
@@ -209,7 +209,7 @@
     // Private methods
     function startUserMedia(stream) {
 
-      if (config.audioUploaded) {
+      if (config.upload) {
         var input = config.getAudioStream();
         config.onEvent(MSG_MEDIA_STREAM_CREATED, 'Uploaded media stream created');
         //Firefox loses the audio input stream every five seconds
@@ -301,7 +301,7 @@
       ws.onopen = function(e) {
         intervalKey = setInterval(function() {
           // debugger;
-          // if (config.audioUploaded) {
+          // if (config.upload) {
           //   let blob = config.getAudioBlob();
           //   socketSend(blob);
           // } else {
@@ -314,7 +314,7 @@
           // }
         }, config.interval);
 
-        // if (!config.audioUploaded) {
+        // if (!config.upload) {
           // Start recording
           recorder.record();
         // }

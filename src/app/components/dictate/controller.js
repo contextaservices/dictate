@@ -27,17 +27,19 @@ class Controller {
       slug: 'mic'
     }, {
       label: 'Upload file',
-      slug: 'file'
+      slug: 'upload'
     }];
     this.modeIdx = 0;
     // set initial mode
     this.switchMode();
 
+    this._setDOM();
+
     this._$scope = $scope;
     this._$rootScope = $rootScope;
     this._deferred = $q.defer();
     this._wavesurfer = WaveSurfer;
-    this.__wavesurferContainer = document.getElementById('waveform__file');
+    this.__wavesurferContainer = document.getElementById('waveform--upload');
     this.__body = $document[0].body;
 
     // this._$rootScope = $rootScope;
@@ -48,23 +50,8 @@ class Controller {
     this.conf = {
       accept: 'audio/*',
       pattern: 'audio/*',
-      multiple: false,
-      disabled: false,
-      // capture: 'recorder??'
-      keepDistinct: true,
       maxFiles: 1,
-      // ignoreInvalid: false,
-      runAllValidations: true,
-      allowDir: true,
-      duration: ($file, $duration) => {
-        return $duration < 10000; // @@todo
-      },
-      modelOptions: {
-        debounce: 100 // @@todo
-      },
-      validate: {}, // @@todo
-      isResumeSupported: true,
-      usingFlash: FileAPI && FileAPI.upload !== null,
+      multiple: true
     }
 
     this.servers = [{
@@ -112,29 +99,39 @@ class Controller {
     // console.log('this.mode', this.mode)
   }
 
+  _setDOM () {
+    this.__transcriptions = {};
+    this.__waveforms = {};
+    for (var i = 0; i < this.modes.length; i++) {
+      let slug = this.modes[i].slug;
+      this.__transcriptions[slug] = document.getElementById(`transcription--${slug}`);
+      this.__waveforms[slug] = document.getElementById(`waveform--${slug}`);
+    }
+
+    this.__transcription = document.getElementById('transcription');
+  }
+
   /**
    * $postLink
    *
    * Set dom elements
    */
   _initDictate () {
-    this.__transcription = document.getElementById('transcription');
-
     let dictateSharedOptions = {
-      transcriptionContainer: document.getElementById('transcription'),
       server: this.server.speech,
       serverStatus: this.server.status,
       recorderWorkerPath: 'app/components/dictate/recorder-worker.js', // @@todo
       onReadyForSpeech: () => {
+        const transcription = this.__transcription; // s[this.mode.slug]; // @@doubt
         this.isConnected = true;
         this.status = 'speech-ready';
 
         this._message('READY FOR SPEECH');
 
-        this._posStart = this.__transcription.getAttribute('selectionStart'); // @@todo
+        this._posStart = transcription.getAttribute('selectionStart'); // @@todo
         this._posEnd = this._posStart;
 
-        let textBeforeCaret = this.__transcription.value.slice(0, this._posStart);
+        let textBeforeCaret = transcription.value.slice(0, this._posStart);
 
         if ((textBeforeCaret.length == 0) || /\. *$/.test(textBeforeCaret) ||  /\n *$/.test(textBeforeCaret)) {
           this._doUpper = true;
@@ -157,20 +154,22 @@ class Controller {
         this.workersAvailableNumber = json['num_workers_available'];
       },
       onPartialResults: (hypo) => {
+        const transcription = this.__transcription;// s[this.mode.slug]; // @@doubt
         let hypoText = this._prettifyHyp(hypo[0].transcript, this._doUpper);
-        let current = this.__transcription.value;
-        this.__transcription.value = current.slice(0, this._posStart) + hypoText + current.slice(this._posEnd);
+        let current = transcription.value;
+        transcription.value = current.slice(0, this._posStart) + hypoText + current.slice(this._posEnd);
         this._posEnd = this._posStart + hypoText.length;
 
-        this.__transcription.setAttribute('selectionStart', this._posEnd); // @@todo
+        transcription.setAttribute('selectionStart', this._posEnd); // @@todo
       },
       onResults: (hypo) => {
+        const transcription = this.__transcription; // s[this.mode.slug]; // @@doubt
         let hypoText = this._prettifyHyp(hypo[0].transcript, this._doUpper);
-        let current = this.__transcription.value;
-        this.__transcription.value = current.slice(0, this._posStart) + hypoText + current.slice(this._posEnd);
+        let current = transcription.value;
+        transcription.value = current.slice(0, this._posStart) + hypoText + current.slice(this._posEnd);
         this._posStart = this._posStart + hypoText.length;
         this._posEnd = this._posStart;
-        this.__transcription.setAttribute('selectionStart', this._posEnd); // @@todo
+        transcription.setAttribute('selectionStart', this._posEnd); // @@todo
 
         if (/\. *$/.test(hypoText) ||  /\n *$/.test(hypoText)) {
           this._doUpper = true;
@@ -189,17 +188,13 @@ class Controller {
       },
     }
 
-    this._dictateAudio = new Dictate(angular.extend({
-      audioUploaded: true,
+    this._dictateUpload = new Dictate(angular.extend({
+      upload: true,
       getAudioBlob: () => {
         return this.fileBlob;
       },
       getAudioStream: () => {
         return this.fileStream;
-      },
-      onInterval: (blob) => {
-        console.log('onInterval', blob)
-        // this.file.src = URL.createObjectURL(blob);
       }
     }, dictateSharedOptions));
 
@@ -211,49 +206,39 @@ class Controller {
   }
 
   /**
-   * Change server
-   * @param  {Object} server
-   * @return {Object}
+   * Dictate: message
+   * @param  {String} code
+   * @param  {?String} data
    */
-  changeServer (server) {
-    this.server = server;
-
-    if (this._dictate) {
-      this._dictate.setServer(server.speech);
-      this._dictate.setServerStatus(server.status);
-    }
-
-    return server;
-  }
-
-  toggleListening () {
-    if (this.isConnected) {
-      this._dictate.stopListening();
-    } else {
-      this._dictate.startListening();
-    }
-  }
-
-  cancel () {
-    this._dictate.cancel();
-  }
-
-  clearTranscription () {
-    this.message = '';
-  }
-
-  _message(code, data) {
+  _message (code, data) {
     this.message = `msg: ${code}: ${data||''}\n${this.message||''}`;
   }
 
-  _error(code, data) {
+  /**
+   * Dictate: error
+   * @param  {String} code
+   * @param  {?String} data
+   */
+  _error (code, data) {
     this.message = `ERR: ${code}: ${data||''}\n${this.message||''}`;
   }
 
+  /**
+   * Dictate: get string with capitalized first letter
+   * @param  {String} code
+   * @param  {?String} data
+   * @return {String}
+   */
   _capitaliseFirstLetter (string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
   }
 
+  /**
+   * Dictate: prettify hypotesis text
+   * @param  {String} code
+   * @param  {?String} data
+   * @return {String}
+   */
   _prettifyHyp (text, doCapFirst) {
     if (doCapFirst) {
       text = this._capitaliseFirstLetter(text);
@@ -286,27 +271,54 @@ class Controller {
   }
 
   /**
-   * Upload file
-   *
-   * @param {Object} File
+   * Change server
+   * @param  {Object} server
+   * @return {Object}
    */
-  upload (file) {
+  changeServer (server) {
+    this.server = server;
+
+    if (this._dictate) {
+      this._dictate.setServer(server.speech);
+      this._dictate.setServerStatus(server.status);
+    }
+
+    return server;
   }
 
   /**
-   * Restart file upload
-   *
-   * @param {Object} File
+   * Dictate Microphone: toggle listening
    */
-  uploadRestart (file) {
-
+  toggleListening () {
+    if (this.isConnected) {
+      this._dictate.stopListening();
+    } else {
+      this._dictate.startListening();
+    }
   }
 
+  /**
+   * Dictate Microphone: cancel
+   */
+  cancel () {
+    this._dictate.cancel();
+    this.stop(); // stop audio player too
+  }
+
+  /**
+   * Dictate: clear transcription
+   */
+  clearTranscription () {
+    this.message = '';
+  }
 
   onFileSelect ($event) {
     this.isDecoding = true;
     let files = $event ? $event.target.files : this.files;
     let file = files[0];
+    if (!file) {
+      return;
+    }
     // let isBlob = file instanceof Blob;
     let fileBlob = new Blob([file]);
 
@@ -324,7 +336,7 @@ class Controller {
         this.fileStream = source;
         // debugger;
 
-        this._dictateAudio.init();
+        this._dictateUpload.init();
         this._wavesurfer.load(this.fileSrc);
         this.isDecoding = false;
         // this._dictate.startListening();
@@ -344,7 +356,6 @@ class Controller {
     // sound.onend = function(e) {
     //   URL.revokeObjectURL(this.src);
     // }
-
   }
 
   /**
@@ -453,16 +464,22 @@ class Controller {
   }
 
   /**
-   * Play pause
+   * Dicate Upload: Play pause
    */
   playPause () {
     this._deferred.promise.then(() => {
       this._wavesurfer.playPause();
+
+      if (this.isPlaying) {
+        this._dictate.stopListening();
+      } else {
+        this._dictate.startListening();
+      }
     });
   }
 
   /**
-   * Stop
+   * Dicate Upload: Stop
    */
   stop () {
     this._deferred.promise.then(() => {
@@ -472,11 +489,13 @@ class Controller {
         this._wavesurfer.stop();
       } catch(e) {}
       this.isPlaying = false;
+
+      this._dictate.cancel();
     });
   }
 
   /**
-   * Toggle mute
+   * Dicate Upload: Toggle mute
    */
   toggleMute () {
     this._deferred.promise.then(() => {

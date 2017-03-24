@@ -2,11 +2,9 @@
   <md-toolbar layout-align="">
     <div class="md-toolbar-tools">
       <a href="/"><img src="images/logo-logotype.png" alt="Contexta Logo" height="42" width="160"></a>
-      <!-- <span flex></span> -->
-      <!-- <player flex url="$ctrl.fileSrc"></player> -->
       <div class="player" flex>
-        <div id="waveform__file" class="waveform" ng-show="$ctrl.mode.slug === 'file'"></div>
-        <div id="waveform__mic" class="waveform" ng-show="$ctrl.mode.slug === 'mic'"></div>
+        <div id="waveform--mic" class="waveform" ng-show="$ctrl.mode.slug === 'mic'"></div>
+        <div id="waveform--upload" class="waveform" ng-show="$ctrl.mode.slug === 'upload'"></div>
       </div>
       <h1>Dictate demo</h1>
     </div>
@@ -15,6 +13,7 @@
 <md-card class="md-whiteframe-8dp home__card">
   <div class="dictate" layout="row">
     <div flex="50" layout="column">
+
       <section class="app__section server">
         <md-input-container class="md-block">
           <label>Select server language</label>
@@ -25,59 +24,54 @@
           </md-select>
         </md-input-container>
       </section>
+
       <section class="app__section controls">
         <md-tabs md-align-tabs="bottom" md-center-tabs="true" md-stretch-tabs="always" md-no-ink md-selected="$ctrl.modeIdx">
-          <md-tab label="{{:: $ctrl.modes[0].label }}" md-on-select="$ctrl.switchMode(0)">
-            <md-button class="md-icon-button md-raised md-accent record" ng-click="$ctrl.toggleListening();" ng-disabled="($ctrl.workersAvailableNumber === 0 && !$ctrl.isConnected) || $ctrl.status === 'end' || $ctrl.status === 'speech-end'">
-              <md-icon md-svg-icon="record_voice_over.svg"></md-icon>
-              <!-- <span ng-show="$ctrl.status === 'speech-ready'">Stop</span>
-              <span ng-show="$ctrl.status === 'speech-end'">Stopping...</span> -->
-              <span ng-show="$ctrl.status === 'end'">Start</span>
-              <md-tooltip>Starts/stops listening for speech.</md-tooltip>
-            </md-button>
-            <md-button ng-click="$ctrl.cancel()" ng-disabled="$ctrl.status === 'end'">
-              Cancel
-              <md-tooltip>Cancels the speech recognition</md-tooltip>
-            </md-button>
+          <md-tab class="controls__microphone" label="{{:: $ctrl.modes[0].label }}" md-on-select="$ctrl.switchMode(0)" layout="column" layout-align="center center">
+            <h4>Press the button to start streaming your microphone</h4>
+            <div layout="row" layout-align="center center">
+              <md-button class="md-raised md-accent record" ng-click="$ctrl.toggleListening();" ng-disabled="($ctrl.workersAvailableNumber === 0 && !$ctrl.isConnected) || $ctrl.status === 'speech-end'">
+                <md-icon md-svg-icon="record_voice_over.svg"></md-icon>
+                <span ng-show="$ctrl.status === 'speech-ready'">Stop</span>
+                <span ng-show="$ctrl.status === 'speech-end'">Stopping...</span>
+                <span ng-show="$ctrl.status === 'end' || !$ctrl.status">Start</span>
+                <md-tooltip>Starts/stops listening for speech.</md-tooltip>
+              </md-button>
+              <md-button class="md-raised" ng-click="$ctrl.cancel()" ng-disabled="$ctrl.status === 'end'">
+                <md-icon md-svg-icon="clear.svg"></md-icon>
+                <span>Cancel</span>
+                <md-tooltip>Cancels the speech recognition</md-tooltip>
+              </md-button>
+            </div>
           </md-tab>
-          <md-tab label="{{:: $ctrl.modes[1].label }}" md-on-select="$ctrl.switchMode(1)">
-            <div ngf-select="$ctrl.onFileSelect()" ngf-drop ng-model="$ctrl.files" ngf-model-invalid="$ctrl.invalidFiles"
-              ngf-model-options="$ctrl.conf.modelOptions"
-              ngf-multiple="$ctrl.conf.multiple" ngf-pattern="$ctrl.conf.pattern" ngf-accept="$ctrl.conf.accept"
-              ng-disabled="$ctrl.conf.disabled"
-              ngf-validate="$ctrl.conf.validate"
-              ngf-duration="$ctrl.conf.duration($file, $duration)"
-              ngf-keep="$ctrl.conf.keepDistinct ? 'distinct' : keep"
-              ngf-max-files="$ctrl.conf.maxFiles"
-              ngf-ignore-invalid="$ctrl.conf.ignoreInvalid"
-              ngf-run-all-validations="$ctrl.conf.runAllValidations"
-              ngf-allow-dir="$ctrl.conf.allowDir"
-              ngf-drag-over-class="'drag-over'"
-              class="upload__dropbox">Select or drop a file</div>
-            <ul class="upload__list">
-              <li class="upload__list-file" ng-repeat="file in $ctrl.files">
+          <md-tab class="controls__upload" label="{{:: $ctrl.modes[1].label }}" md-on-select="$ctrl.switchMode(1)" layout="column" layout-align="center center">
+            <div ngf-select="$ctrl.onFileSelect()" ngf-drop ng-model="$ctrl.files" ngf-model-invalid="$ctrl.invalidFiles" ngf-multiple="$ctrl.conf.multiple" ngf-pattern="$ctrl.conf.pattern" ngf-accept="$ctrl.conf.accept" ngf-max-files="$ctrl.conf.maxFiles" ngf-drag-over-class="'drag-over'" class="controls__upload-dropbox"><h4>Select or drop a file</h4></div>
+            <ul class="controls__upload-list">
+              <li class="controls__upload-list-file" ng-repeat="file in $ctrl.files">
                 <span class="progress" ng-show="file.progress >= 0">
                   <div style="width:{{file.progress}}%">{{file.progress}}%</div>
                 </span>
                 <span>{{file.name}} - size: {{file.size}}B - type: {{file.type}}</span>
               </li>
-              <li class="upload__list-error md-warn" ng-repeat="file in $ctrl.invalidFiles">
+              <li class="controls__upload-list-error md-warn" ng-repeat="file in $ctrl.invalidFiles">
                 Invalid File: {{file.$errorMessages}} {{file.$errorParam}}, {{file.name}} - size: {{file.size}}B - type: {{file.type}}
               </li>
             </ul>
-            <md-button class="md-icon-button md-raised md-accent" ng-click="$ctrl.playPause()" ng-disabled="!$ctrl.fileSrc">
-              <md-icon md-svg-icon="play_arrow.svg" aria-label="Play" ng-hide="$ctrl.isPlaying"></md-icon>
-              <md-icon md-svg-icon="pause.svg" aria-label="Pause" ng-show="$ctrl.isPlaying"></md-icon>
-            </md-button>
-            <md-button class="md-icon-button md-raised" aria-label="Stop" ng-click="$ctrl.stop()" ng-disabled="!$ctrl.isPlaying || $ctrl.status === 'speech-end'">
-              <md-icon md-svg-icon="stop.svg"></md-icon>
-              <span ng-show="$ctrl.status === 'speech-end'">Stopping...</span>
-              <span ng-show="$ctrl.status === 'speech-ready'">Stop</span>
-            </md-button>
-            <md-button class="md-icon-button md-raised player__mute" ng-click="$ctrl.toggleMute()" ng-disabled="!$ctrl.isPlaying">
-              <md-icon md-svg-icon="volume_up.svg" aria-label="Volume" ng-hide="$ctrl.isMute"></md-icon>
-              <md-icon md-svg-icon="volume_mute.svg" aria-label="Mute" ng-show="$ctrl.isMute"></md-icon>
-            </md-button>
+            <div  layout="row" layout-align="center center">
+              <md-button class="md-icon-button md-raised md-accent" ng-click="$ctrl.playPause()" ng-disabled="!$ctrl.fileSrc">
+                <md-icon md-svg-icon="play_arrow.svg" aria-label="Play" ng-hide="$ctrl.isPlaying"></md-icon>
+                <md-icon md-svg-icon="pause.svg" aria-label="Pause" ng-show="$ctrl.isPlaying"></md-icon>
+              </md-button>
+              <md-button class="md-icon-button md-raised" aria-label="Stop" ng-click="$ctrl.stop()" ng-disabled="!$ctrl.isPlaying || $ctrl.status === 'speech-end'">
+                <md-icon md-svg-icon="stop.svg"></md-icon>
+                <span ng-show="$ctrl.status === 'speech-end'">Stopping...</span>
+                <span ng-show="$ctrl.status === 'speech-ready'">Stop</span>
+              </md-button>
+              <md-button class="md-icon-button md-raised player__mute" ng-click="$ctrl.toggleMute()" ng-disabled="!$ctrl.isPlaying">
+                <md-icon md-svg-icon="volume_up.svg" aria-label="Volume" ng-hide="$ctrl.isMute"></md-icon>
+                <md-icon md-svg-icon="volume_mute.svg" aria-label="Mute" ng-show="$ctrl.isMute"></md-icon>
+              </md-button>
+            </div>
           </md-tab>
         </md-tabs>
       </section>
@@ -97,9 +91,14 @@
       </md-button>
       <h3>Transcription</h3>
       <md-input-container class="md-block" flex>
-        <textarea id="transcription__mic" rows="5" ng-show="$ctrl.mode.slug === 'mic'"></textarea>
-        <textarea id="transcription__file" rows="5" ng-show="$ctrl.mode.slug === 'file'"></textarea>
+        <textarea id="transcription" rows="5"></textarea>
       </md-input-container>
+      <!-- <md-input-container class="md-block" ng-show="$ctrl.mode.slug === 'mic'" flex>
+        <textarea id="transcription--mic" rows="5"></textarea>
+      </md-input-container>
+      <md-input-container class="md-block" ng-show="$ctrl.mode.slug === 'upload'" flex>
+        <textarea id="transcription--upload" rows="5"></textarea>
+      </md-input-container> -->
     </section>
   </div>
 

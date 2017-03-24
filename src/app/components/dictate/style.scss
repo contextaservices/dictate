@@ -13,38 +13,6 @@
   }
 
   /**
-   * Section: Transcription
-   */
-  .upload {
-    &__list {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-
-      &-file {
-        margin: 5px 0;
-        white-space: nowrap;
-        font-style: 11px;
-      }
-      &-error {
-
-      }
-    }
-
-    &__dropbox {
-      // background: #F8F8F8;
-      // border: 2px dashed #ddd;
-      text-align: center;
-      padding: 0;
-      height: 100px;
-      line-height: 100px;
-      font-style: italic;
-      color: $md-light-text;
-      cursor: pointer;
-    }
-  }
-
-  /**
    * Section: Controls
    */
   .controls {
@@ -52,11 +20,54 @@
       padding: 0;
     }
     md-tab-content {
-      padding: $md-gutter * 2;
+      padding: 0 ($md-gutter * 2) ($md-gutter * 2) ($md-gutter * 2);
+    }
+    h4 {
+      text-align: center;
+      font-style: italic;
+      color: $md-light-text;
+      font-weight: 400;
     }
 
-    .md-button.record {
-      background: rgb(225, 17, 17);
+    /**
+     * Sub Section (tab): Controls -> Microphone
+     */
+    &__microphone {
+        .md-button md-icon {
+        top: -3px;
+        position: relative;
+        margin: 0 4px;
+      }
+    }
+
+    /**
+     * Sub Section (tab): Controls -> Upload
+     */
+    &__upload {
+      &-list {
+        list-style: none;
+        margin: 0 0 $md-gutter * 2;
+        padding: 0;
+
+        &-file {
+          text-align: center;
+          margin: 5px 0;
+          // white-space: nowrap;
+          font-size: 12px;
+        }
+        &-error {
+
+        }
+      }
+
+      &-dropbox {
+        // background: #F8F8F8;
+        // border: 2px dashed #ddd;
+        padding: 0;
+        height: 100px;
+        line-height: 100px;
+        cursor: pointer;
+      }
     }
   }
 
@@ -82,9 +93,6 @@
       left: ($md-gutter * 2);
       right: 0;
       margin: 0;
-    }
-    .md-resize-wrapper {
-      min-height: 100%;
     }
     .md-input {
       width: 92%;
@@ -117,6 +125,10 @@
       white-space: pre-line;
       word-break: break-word;
       color: $md-accent;
+      margin-right: -($md-gutter * 2);
+      padding-right: ($md-gutter * 2);
+      margin-bottom: -($md-gutter * 2);
+      padding-bottom: ($md-gutter * 2);
     }
   }
 // }

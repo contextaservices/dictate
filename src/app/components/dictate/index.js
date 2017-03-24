@@ -7,7 +7,21 @@ let module = angular.module('dictate', [
 ])
 
 .component('dictate', component)
-
+.directive('ngUploadChange',function(){
+  return {
+    scope: {
+      ngUploadChange: '&'
+    },
+    link: function ($scope, $element, $attrs) {
+      $element.on('change', function(event) {
+        $scope.ngUploadChange({ $event: event })
+      })
+      $scope.$on('$destroy', function(){
+        $element.off();
+      });
+    }
+  }
+})
 .name;
 
 export default module;

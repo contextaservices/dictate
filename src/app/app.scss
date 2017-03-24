@@ -15,6 +15,7 @@
   &__header {
     z-index: 3;
     position: relative;
+    width: 100%;
 
     .md-toolbar-tools {
       margin: 0 auto;
@@ -35,10 +36,19 @@
   }
 
   &__footer {}
+
+  &__section {
+    padding: $md-gutter * 2;
+  }
+
+
+  &__container {
+    width: 800px !important;
+    max-width: 800px !important;
+    margin: 0 auto;
+  }
 }
 
-.home {
-  &__card > md-content {
-    background: #fff;
-  }
+app {
+  background: $md-primary;
 }

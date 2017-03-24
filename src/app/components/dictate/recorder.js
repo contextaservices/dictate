@@ -8,6 +8,7 @@
     this.context = source.context;
     this.node = this.context.createScriptProcessor(bufferLen, 1, 1);
     var worker = new Worker(config.workerPath || WORKER_PATH);
+    // debugger;
     worker.postMessage({
       command: 'init',
       config: {

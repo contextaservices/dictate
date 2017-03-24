@@ -1,13 +1,126 @@
 @import "../../common/config.variables";
 
-.dictate {
-}
 
-.drop-box {
-  background: #F8F8F8;
-  border: 5px dashed #DDD;
-  width: 170px;
-  text-align: center;
-  padding: 50px 10px;
-  margin-left: 10px;
+.app__section {
+  width: 380px;
+  box-sizing: border-box;
+}
+// .app__section {
+  /**
+   * Section: Server
+   */
+  .server {
+  }
+
+  /**
+   * Section: Transcription
+   */
+  .upload {
+    &__list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+
+      &-file {
+        margin: 5px 0;
+        white-space: nowrap;
+        font-style: 11px;
+      }
+      &-error {
+
+      }
+    }
+
+    &__dropbox {
+      // background: #F8F8F8;
+      // border: 2px dashed #ddd;
+      text-align: center;
+      padding: 0;
+      height: 100px;
+      line-height: 100px;
+      font-style: italic;
+      color: $md-light-text;
+      cursor: pointer;
+    }
+  }
+
+  /**
+   * Section: Controls
+   */
+  .controls {
+    &.app__section {
+      padding: 0;
+    }
+    md-tab-content {
+      padding: $md-gutter * 2;
+    }
+
+    .md-button.record {
+      background: rgb(225, 17, 17);
+    }
+  }
+
+  /**
+   * Section: Transcription
+   */
+  .transcription {
+    position: relative;
+    background: $CO--brand-light;
+
+    &__clear.md-button {
+      position: absolute;
+      top: $md-gutter;
+      right: $md-gutter;
+    }
+
+    md-input-container.md-block {
+      // min-height: 100%;
+      position: absolute;
+      top: ($md-gutter * 4);
+      bottom: 0;
+      overflow: auto;
+      left: ($md-gutter * 2);
+      right: 0;
+      margin: 0;
+    }
+    .md-resize-wrapper {
+      min-height: 100%;
+    }
+    .md-input {
+      width: 92%;
+      width: calc(100% - 24px); // ($md-gutter * 1.5)
+      padding: 0;
+      border: 0;
+      margin: 0 0 0 -($md-gutter / 2);
+    }
+    md-input-container label {
+    }
+    h3 {
+      position: absolute;
+      top: $md-gutter;
+      text-transform: uppercase;
+      font-size: 14px;
+    }
+  }
+
+  /**
+   * Section: Log
+   */
+  .log {
+    font-family: monospace;
+    background: darken(desaturate($CO--brand-light, 10), 10);
+
+    &__messages {
+      // background: darken(desaturate($CO--brand-light, 10), 20);
+      max-height: 100px;
+      overflow: auto;
+      white-space: pre-line;
+      word-break: break-word;
+      color: $md-accent;
+    }
+  }
+// }
+
+.player {
+  margin: 0 $md-gutter * 2;
 }

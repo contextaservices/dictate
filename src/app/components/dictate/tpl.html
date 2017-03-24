@@ -1,103 +1,106 @@
-<div class="dictate container">
+<header class="app__header">
+  <md-toolbar layout-align="">
+    <div class="md-toolbar-tools">
+      <a href="/"><img src="images/logo-logotype.png" alt="Contexta Logo" height="42" width="160"></a>
+      <!-- <span flex></span> -->
+      <!-- <player flex url="$ctrl.fileSrc"></player> -->
+      <div class="player" flex>
+        <div id="waveform__file" class="waveform" ng-show="$ctrl.mode.slug === 'file'"></div>
+        <div id="waveform__mic" class="waveform" ng-show="$ctrl.mode.slug === 'mic'"></div>
+      </div>
+      <h1>Dictate demo</h1>
+    </div>
+  </md-toolbar>
+</header>
+<md-card class="md-whiteframe-8dp home__card">
+  <div class="dictate" layout="row">
+    <div flex="50" layout="column">
+      <section class="app__section server">
+        <md-input-container class="md-block">
+          <label>Select server language</label>
+          <md-select
+            ng-model="$ctrl.server"
+            name="server">
+            <md-option ng-value="server" ng-repeat="server in $ctrl.servers" ng-click="$ctrl.changeServer(server)">{{:: server.name }}</md-option>
+          </md-select>
+        </md-input-container>
+      </section>
+      <section class="app__section controls">
+        <md-tabs md-align-tabs="bottom" md-center-tabs="true" md-stretch-tabs="always" md-no-ink md-selected="$ctrl.modeIdx">
+          <md-tab label="{{:: $ctrl.modes[0].label }}" md-on-select="$ctrl.switchMode(0)">
+            <md-button class="md-icon-button md-raised md-accent record" ng-click="$ctrl.toggleListening();" ng-disabled="($ctrl.workersAvailableNumber === 0 && !$ctrl.isConnected) || $ctrl.status === 'end' || $ctrl.status === 'speech-end'">
+              <md-icon md-svg-icon="record_voice_over.svg"></md-icon>
+              <!-- <span ng-show="$ctrl.status === 'speech-ready'">Stop</span>
+              <span ng-show="$ctrl.status === 'speech-end'">Stopping...</span> -->
+              <span ng-show="$ctrl.status === 'end'">Start</span>
+              <md-tooltip>Starts/stops listening for speech.</md-tooltip>
+            </md-button>
+            <md-button ng-click="$ctrl.cancel()" ng-disabled="$ctrl.status === 'end'">
+              Cancel
+              <md-tooltip>Cancels the speech recognition</md-tooltip>
+            </md-button>
+          </md-tab>
+          <md-tab label="{{:: $ctrl.modes[1].label }}" md-on-select="$ctrl.switchMode(1)">
+            <div ngf-select="$ctrl.onFileSelect()" ngf-drop ng-model="$ctrl.files" ngf-model-invalid="$ctrl.invalidFiles"
+              ngf-model-options="$ctrl.conf.modelOptions"
+              ngf-multiple="$ctrl.conf.multiple" ngf-pattern="$ctrl.conf.pattern" ngf-accept="$ctrl.conf.accept"
+              ng-disabled="$ctrl.conf.disabled"
+              ngf-validate="$ctrl.conf.validate"
+              ngf-duration="$ctrl.conf.duration($file, $duration)"
+              ngf-keep="$ctrl.conf.keepDistinct ? 'distinct' : keep"
+              ngf-max-files="$ctrl.conf.maxFiles"
+              ngf-ignore-invalid="$ctrl.conf.ignoreInvalid"
+              ngf-run-all-validations="$ctrl.conf.runAllValidations"
+              ngf-allow-dir="$ctrl.conf.allowDir"
+              ngf-drag-over-class="'drag-over'"
+              class="upload__dropbox">Select or drop a file</div>
+            <ul class="upload__list">
+              <li class="upload__list-file" ng-repeat="file in $ctrl.files">
+                <span class="progress" ng-show="file.progress >= 0">
+                  <div style="width:{{file.progress}}%">{{file.progress}}%</div>
+                </span>
+                <span>{{file.name}} - size: {{file.size}}B - type: {{file.type}}</span>
+              </li>
+              <li class="upload__list-error md-warn" ng-repeat="file in $ctrl.invalidFiles">
+                Invalid File: {{file.$errorMessages}} {{file.$errorParam}}, {{file.name}} - size: {{file.size}}B - type: {{file.type}}
+              </li>
+            </ul>
+            <md-button class="md-icon-button md-raised md-accent" ng-click="$ctrl.playPause()" ng-disabled="!$ctrl.fileSrc">
+              <md-icon md-svg-icon="play_arrow.svg" aria-label="Play" ng-hide="$ctrl.isPlaying"></md-icon>
+              <md-icon md-svg-icon="pause.svg" aria-label="Pause" ng-show="$ctrl.isPlaying"></md-icon>
+            </md-button>
+            <md-button class="md-icon-button md-raised" aria-label="Stop" ng-click="$ctrl.stop()" ng-disabled="!$ctrl.isPlaying || $ctrl.status === 'speech-end'">
+              <md-icon md-svg-icon="stop.svg"></md-icon>
+              <span ng-show="$ctrl.status === 'speech-end'">Stopping...</span>
+              <span ng-show="$ctrl.status === 'speech-ready'">Stop</span>
+            </md-button>
+            <md-button class="md-icon-button md-raised player__mute" ng-click="$ctrl.toggleMute()" ng-disabled="!$ctrl.isPlaying">
+              <md-icon md-svg-icon="volume_up.svg" aria-label="Volume" ng-hide="$ctrl.isMute"></md-icon>
+              <md-icon md-svg-icon="volume_mute.svg" aria-label="Mute" ng-show="$ctrl.isMute"></md-icon>
+            </md-button>
+          </md-tab>
+        </md-tabs>
+      </section>
 
-  <div>
-    <!-- <audio controls ngf-src="!files[0].$error && files[0]"></audio> -->
-    <audio id="dictate__audio" controls src="{{ $ctrl.file.src }}"></audio>
+      <section class="app__section log">
+        <small ng-class="{'highlight': $ctrl.workersAvailableNumber === 0}">
+          Number of available workers: {{ $ctrl.workersAvailableNumber || 0 }}
+        </small>
+        <pre class="log__messages">{{ $ctrl.message }}</pre>
+      </section>
+    </div>
+
+    <section class="app__section transcription" flex="50">
+      <md-button class="transcription__clear md-icon-button" aria-label="Clear transcription" ng-click="$ctrl.clearTranscription()">
+        <md-icon md-svg-icon="clear.svg"></md-icon>
+        <md-tooltip>Clears the transcription</md-tooltip>
+      </md-button>
+      <h3>Transcription</h3>
+      <md-input-container class="md-block" flex>
+        <textarea id="transcription__mic" rows="5" ng-show="$ctrl.mode.slug === 'mic'"></textarea>
+        <textarea id="transcription__file" rows="5" ng-show="$ctrl.mode.slug === 'file'"></textarea>
+      </md-input-container>
+    </section>
   </div>
 
-  <span ng-class="{'highlight': $ctrl.workersAvailableNumber === 0}">
-    Number of available workers: {{ $ctrl.workersAvailableNumber }}
-  </span>
-
-  <div ngf-select="$ctrl.onFileSelect()" ngf-drop ng-model="$ctrl.files" ngf-model-invalid="$ctrl.invalidFiles"
-    ngf-model-options="$ctrl.conf.modelOptions"
-    ngf-multiple="$ctrl.conf.multiple" ngf-pattern="$ctrl.conf.pattern" ngf-accept="$ctrl.conf.accept"
-    ng-disabled="$ctrl.conf.disabled"
-    ngf-validate="$ctrl.conf.validate"
-    ngf-duration="$ctrl.conf.duration($file, $duration)"
-    ngf-keep="$ctrl.conf.keepDistinct ? 'distinct' : keep"
-    ngf-max-files="$ctrl.conf.maxFiles"
-    ngf-ignore-invalid="$ctrl.conf.ignoreInvalid"
-    ngf-run-all-validations="$ctrl.conf.runAllValidations"
-    ngf-allow-dir="$ctrl.conf.allowDir"
-    ngf-drag-over-class="'drag-over'"
-    class="drop-box">
-    <!--
-    ngf-capture="$ctrl.conf.capture"
-    ngf-dimensions="dimensionsFn($file, $width, $height)"
-    ngf-resize="resizeObj"
-    ngf-resize-if="resizeIfFn($file, $width, $height)"
-    -->
-    Select File or Drop File
-  </div>
-  <ul>
-    <li class="sel-file" ng-repeat="file in $ctrl.files">
-      <div>
-        <span class="progress" ng-show="file.progress >= 0">
-          <div style="width:{{file.progress}}%">{{file.progress}}%</div>
-        </span>
-        <button class="button" ng-click="file.upload.abort();file.upload.aborted=true"
-                ng-show="file.upload != null && file.progress < 100 && !file.upload.aborted">
-          Abort<span ng-show="$ctrl.conf.isResumeSupported">/Pause</span>
-        </button>
-        <button class="button" ng-click="$ctrl.upload(file, true);file.upload.aborted=false"
-                ng-show="$ctrl.conf.isResumeSupported && file.upload != null && file.upload.aborted">Resume
-        </button>
-        <button class="button" ng-click="$ctrl.uploadRestart(file);file.upload.aborted=false"
-                ng-show="$ctrl.conf.isResumeSupported && file.upload != null && (file.progress == 100 || file.upload.aborted)">Restart
-        </button>
-        <span>{{file.name}} - size: {{file.size}}B - type: {{file.type}}</span>
-        <md-button ng-show="file.result" ng-click="file.showDetail = !$file.showDetail">details</md-button>
-
-        <div ng-show="file.showDetail">
-          <div data-ng-show="file.result.result == null">{{file.result}}</div>
-          <ul>
-            <li ng-repeat="item in file.result.result">
-              <div data-ng-show="item.name">file name: {{item.name}}</div>
-              <div data-ng-show="item.fieldName">name: {{item.fieldName}}</div>
-              <div data-ng-show="item.size">size on the server: {{item.size}}</div>
-              <div data-ng-show="item.value">value: {{item.value}}</div>
-            </li>
-          </ul>
-          <div data-ng-show="file.result.requestHeaders">request headers: {{file.result.requestHeaders}}</div>
-        </div>
-      </div>
-    </li>
-    <li class="md-warn" ng-repeat="file in $ctrl.invalidFiles">
-      <div>Invalid File: {{file.$errorMessages}} {{file.$errorParam}}, {{file.name}} - size: {{file.size}}B - type:
-        {{file.type}}
-      </div>
-    </li>
-  </ul>
-
-  <md-button ng-click="$ctrl.toggleListening();" ng-disabled="($ctrl.workersAvailableNumber === 0 && !$ctrl.isConnected) || $ctrl.status === 'end' || $ctrl.status === 'speech-end'">
-    <span ng-show="$ctrl.status === 'speech-end'">Stopping...</span>
-    <span ng-show="$ctrl.status === 'end'">Start</span>
-    <span ng-show="$ctrl.status === 'speech-ready'">Stop</span>
-    <md-tooltip>Starts/stops listening for speech.</md-tooltip>
-  </md-button>
-  <md-button ng-click="$ctrl.cancel()" ng-disabled="$ctrl.status === 'end'">
-    Cancel
-    <md-tooltip>Cancels the speech recognition</md-tooltip>
-  </md-button>
-  <md-button ng-click="$ctrl.clearTranscription()">
-    Clear
-    <md-tooltip>Clears the transcription</md-tooltip>
-  </md-button>
-
-  <md-input-container class="md-block">
-    <label>Transcription</label>
-    <textarea id="trans" ng-model="$ctrl.transcription" rows="5"></textarea>
-  </md-input-container>
-
-  <md-input-container>
-    <label>Server</label>
-    <md-select
-      ng-model="$ctrl.server"
-      name="server">
-      <md-option ng-value="server" ng-repeat="server in $ctrl.servers" ng-click="$ctrl.changeServer(server)">{{:: server.name }}</md-option>
-    </md-select>
-  </md-input-container>
-
-  <pre>{{ $ctrl.message }}</pre>
-</div>
+</md-card>

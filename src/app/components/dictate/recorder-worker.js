@@ -162,6 +162,9 @@ this.onmessage = function(e){
     case 'record':
       record(e.data.buffer);
       break;
+    case 'stream':
+      stream(e.data.buffer);
+      break;
     case 'exportWAV':
       exportWAV(e.data.type);
       break;
@@ -186,6 +189,11 @@ function init(config){
 }
 
 function record(inputBuffer){
+  recBuffers.push(inputBuffer[0]);
+  recLength += inputBuffer[0].length;
+}
+
+function stream(inputBuffer){
   recBuffers.push(inputBuffer[0]);
   recLength += inputBuffer[0].length;
 }

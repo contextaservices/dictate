@@ -1,20 +1,6 @@
-//
-//
-//
-//
-//
-//
-// add 45 minutes of work!!!!!!!!!!!!! migration to angular
-// add 20 minutes setup ng-file-upload
-// add 85 minutes understanding dictate codebase and trying upload audio as blob url
-// add 13:53
-//
-//
-//
-//
-//
-
 import $ from 'jquery/dist/jquery';
+import WaveSurfer from 'wavesurfer.js/dist/wavesurfer';
+import blobUtil from 'blob-util';
 import './dictate';
 import './recorder';
 
@@ -33,17 +19,31 @@ import './recorder';
 
 class Controller {
 
-  constructor (Upload) {
+  constructor ($scope, $rootScope, $q, $document) {
     'ngInject';
 
-    this._$upload = Upload;
+    this.modes = [{
+      label: 'Microphone',
+      slug: 'mic'
+    }, {
+      label: 'Upload file',
+      slug: 'file'
+    }];
+    this.modeIdx = 0;
+    // set initial mode
+    this.switchMode();
+
+    this._$scope = $scope;
+    this._$rootScope = $rootScope;
+    this._deferred = $q.defer();
+    this._wavesurfer = WaveSurfer;
+    this.__wavesurferContainer = document.getElementById('waveform__file');
+    this.__body = $document[0].body;
 
     // this._$rootScope = $rootScope;
     this.file = {};
     this.files = [];
     this.invalidFiles = [];
-    this.bile = {};
-    this.biles = [];
 
     this.conf = {
       accept: 'audio/*',
@@ -73,15 +73,22 @@ class Controller {
       status: 'wss://kalditest.westeurope.cloudapp.azure.com:8888/client/ws/status'
     }, {
       name: 'English',
-      speech: 'ws://bark.phon.ioc.ee:8443/english/duplex-speech-api/ws/speech',
-      status: 'ws://bark.phon.ioc.ee:8443/english/duplex-speech-api/ws/status'
+      speech: 'wss://bark.phon.ioc.ee:8443/english/duplex-speech-api/ws/speech',
+      status: 'wss://bark.phon.ioc.ee:8443/english/duplex-speech-api/ws/status'
     }, {
       name: 'Eesti keel',
       speech: 'wss://bark.phon.ioc.ee:8443/dev/duplex-speech-api/ws/speech',
       status: 'wss://bark.phon.ioc.ee:8443/dev/duplex-speech-api/ws/status'
     }];
 
-    this.server = this.servers[0];
+    // set default server
+    this.changeServer(this.servers[1]);
+
+    this._initDictate();
+    this._initWaveSurfer();
+
+    // set default server
+    this.changeServer(this.servers[1]);
   }
 
   /**
@@ -100,18 +107,24 @@ class Controller {
     this.isConnected = false;
   }
 
+  switchMode (idx) {
+    this.mode = this.modes[idx];
+    // console.log('this.mode', this.mode)
+  }
+
   /**
    * $postLink
    *
    * Set dom elements
    */
-  $postLink() {
+  _initDictate () {
     this.__transcription = document.getElementById('transcription');
 
-    this._dictate = new Dictate({
+    let dictateSharedOptions = {
+      transcriptionContainer: document.getElementById('transcription'),
       server: this.server.speech,
       serverStatus: this.server.status,
-      recorderWorkerPath: '../recorder-worker.js', // @@todo
+      recorderWorkerPath: 'app/components/dictate/recorder-worker.js', // @@todo
       onReadyForSpeech: () => {
         this.isConnected = true;
         this.status = 'speech-ready';
@@ -174,17 +187,43 @@ class Controller {
       onEvent: (code, data) => {
         this._message(code, data);
       },
-      getAudioBlob: () => {
-        return this.file.src;
-      }
-    });
+    }
 
+    this._dictateAudio = new Dictate(angular.extend({
+      audioUploaded: true,
+      getAudioBlob: () => {
+        return this.fileBlob;
+      },
+      getAudioStream: () => {
+        return this.fileStream;
+      },
+      onInterval: (blob) => {
+        console.log('onInterval', blob)
+        // this.file.src = URL.createObjectURL(blob);
+      }
+    }, dictateSharedOptions));
+
+    this._dictate = new Dictate(angular.extend({}, dictateSharedOptions));
+
+    // init this immediately
     this._dictate.init();
+    // initalize the audio one when the audio has loaded
   }
 
+  /**
+   * Change server
+   * @param  {Object} server
+   * @return {Object}
+   */
   changeServer (server) {
-    this._dictate.setServer(server.speech);
-    this._dictate.setServerStatus(server.status);
+    this.server = server;
+
+    if (this._dictate) {
+      this._dictate.setServer(server.speech);
+      this._dictate.setServerStatus(server.status);
+    }
+
+    return server;
   }
 
   toggleListening () {
@@ -219,13 +258,13 @@ class Controller {
     if (doCapFirst) {
       text = this._capitaliseFirstLetter(text);
     }
-    tokens = text.split(' ');
+    let tokens = text.split(' ');
     text = '';
     if (this._doPrependSpace) {
       text = ' ';
     }
     this._doCapitalizeNext = false;
-    tokens.map(function(token) {
+    tokens.map((token) => {
       if (text.trim().length > 0) {
         text = text + ' ';
       }
@@ -264,14 +303,194 @@ class Controller {
   }
 
 
-  onFileSelect () {
-    // debugger;
-    this.file.src = URL.createObjectURL(this.files[0]);
+  onFileSelect ($event) {
+    this.isDecoding = true;
+    let files = $event ? $event.target.files : this.files;
+    let file = files[0];
+    // let isBlob = file instanceof Blob;
+    let fileBlob = new Blob([file]);
+
+    this.fileSrc = URL.createObjectURL(file); // this.file['$ngfBlobUrl']
+    this.fileBlob = fileBlob;
+
+    blobUtil.blobToArrayBuffer(fileBlob).then((result) => {
+      let fileArrayBuffer = result;
+
+      let ctx = new window.AudioContext();
+      let source = ctx.createBufferSource();
+      // debugger;
+      ctx.decodeAudioData(fileArrayBuffer, (buffer) => {
+        source.buffer = buffer;
+        this.fileStream = source;
+        // debugger;
+
+        this._dictateAudio.init();
+        this._wavesurfer.load(this.fileSrc);
+        this.isDecoding = false;
+        // this._dictate.startListening();
+        // console.log('ctx.decodeAudioData() success, buffer: ', buffer);
+      }, function () {
+        console.error('ctx.decodeAudioData() called onerror');
+        this.isDecoding = false;
+      })
+
+    }).catch(function (err) {
+      // failed to load
+      this.isDecoding = false;
+    });;
+
     // not really needed in this exact case, but since it is really important in other cases,
     // don't forget to revoke the blobURI when you don't need it
     // sound.onend = function(e) {
     //   URL.revokeObjectURL(this.src);
     // }
+
+  }
+
+  /**
+   * Reset player
+   * @return {[type]} [description]
+   */
+  _resetPlayer () {
+    this.isPlaying = false;
+    this.isMute = false;
+    this.isError = false;
+    this.isLoading = true;
+    this.duration = 0;
+    this.time = 0;
+  }
+
+  /**
+   * Load wavesurfer
+   * @param  {Object} options
+   * @param  {string} url
+   */
+  _initWaveSurfer () {
+    this._wavesurfer.init({
+      container: this.__wavesurferContainer,
+      waveColor: '#C1D2E5',
+      progressColor: '#fff', // '#2191D0',
+      cursorWidth: 0,
+      height: 40 // @see scss: $CO--player__height \\
+    });
+
+    /**
+     * On ready
+     */
+    this._wavesurfer.on('ready', () => {
+      this._deferred.resolve('ready');
+      this.isLoading = false;
+      this.duration = this.duration = Math.floor(this._wavesurfer.getDuration()).toString();
+      this._exactTime = this._wavesurfer.getCurrentTime();
+      this.time = Math.floor(this._exactTime).toString();
+      this._safeApply();
+    });
+
+    /**
+     * On error
+     */
+    this._wavesurfer.on('error', () => {
+      // this._deferred.reject('ready');
+      this.isLoading = false;
+      this.isError = true;
+      this._safeApply();
+    });
+
+    /**
+     * On play/pause
+     */
+    this._wavesurfer.on('play', () => {
+      this.isPlaying = !this.isPlaying;
+      this.__body.classList.add('is-playing');
+    });
+    this._wavesurfer.on('pause', () => {
+      this.isPlaying = !this.isPlaying;
+      this.__body.classList.remove('is-playing');
+    });
+
+    /**
+     * On audioprocess
+     * @param  {number} exactTime
+     */
+    this._wavesurfer.on('audioprocess', (exactTime) => {
+      if (this.time !== Math.floor(exactTime)) {
+        this.time = Math.floor(exactTime);
+        this._safeApply();
+      }
+    });
+
+    /**
+     * On seek
+     * @param  {number} time
+     */
+    this._wavesurfer.on('seek', () => {
+      this._exactTime = this._wavesurfer.getCurrentTime();
+      this.time = Math.floor(this._exactTime);
+      this._safeApply();
+    });
+
+    /**
+     * On finish
+     */
+    this._wavesurfer.on('finish', () => {
+      this.isPlaying = false;
+    });
+  }
+
+  /**
+   * Safe apply
+   * @param  {Function} fn [description]
+   */
+  _safeApply (fn) {
+    const phase = this._$rootScope.$$phase;
+    if (phase === '$apply' || phase === '$digest') {
+      if (fn && (typeof(fn) === 'function')) {
+        fn();
+      }
+    } else {
+      this._$scope.$apply(fn);
+    }
+  }
+
+  /**
+   * Play pause
+   */
+  playPause () {
+    this._deferred.promise.then(() => {
+      this._wavesurfer.playPause();
+    });
+  }
+
+  /**
+   * Stop
+   */
+  stop () {
+    this._deferred.promise.then(() => {
+      // it gives a useless error
+      try {
+        this._wavesurfer.seekTo(0);
+        this._wavesurfer.stop();
+      } catch(e) {}
+      this.isPlaying = false;
+    });
+  }
+
+  /**
+   * Toggle mute
+   */
+  toggleMute () {
+    this._deferred.promise.then(() => {
+      this._wavesurfer.toggleMute();
+    });
+    this.isMute = !this.isMute;
+  }
+
+  /**
+   * Seek to
+   * @param  {number} exactTime
+   */
+  seekTo (exactTime) {
+    this._wavesurfer.seekTo(exactTime / this.duration);
   }
 }
 

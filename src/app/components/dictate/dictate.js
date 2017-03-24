@@ -40,6 +40,7 @@
   };
 
   var Dictate = function(cfg) {
+    let self = this;
     var config = cfg || {};
     config.server = config.server || SERVER;
     config.audioSourceId = config.audioSourceId;
@@ -56,7 +57,7 @@
     config.onEvent = config.onEvent || function(e, data) {};
     config.onError = config.onError || function(e, data) {};
     config.rafCallback = config.rafCallback || function(time) {};
-    config.audioSourceIsMic = config.audioSourceIsMic || true;
+    config.audioUploaded = config.audioUploaded || false;
     config.getAudioBlob = config.getAudioBlob || function () {};
     if (config.onServerStatus) {
       monitorServerStatus();
@@ -117,13 +118,13 @@
 
     // Start recording and transcribing
     this.startListening = function() {
-      if (! recorder) {
+      if (!recorder) {
         config.onError(ERR_AUDIO, "Recorder undefined");
         return;
       }
 
       if (ws) {
-        cancel();
+        self.cancel();
       }
 
       try {
@@ -207,20 +208,32 @@
 
     // Private methods
     function startUserMedia(stream) {
-      var input = audioContext.createMediaStreamSource(stream);
-      config.onEvent(MSG_MEDIA_STREAM_CREATED, 'Media stream created');
-                        //Firefox loses the audio input stream every five seconds
-                        // To fix added the input to window.source
-                        window.source = input;
 
-      // make the analyser available in window context
-      window.userSpeechAnalyser = audioContext.createAnalyser();
-      input.connect(window.userSpeechAnalyser);
+      if (config.audioUploaded) {
+        var input = config.getAudioStream();
+        config.onEvent(MSG_MEDIA_STREAM_CREATED, 'Uploaded media stream created');
+        //Firefox loses the audio input stream every five seconds
+        // To fix added the input to window.source
+        window.source = input;
 
-      config.rafCallback();
+        config.onEvent(MSG_INIT_RECORDER, 'Playback initialized');
 
+      } else {
+        var input = audioContext.createMediaStreamSource(stream);
+        config.onEvent(MSG_MEDIA_STREAM_CREATED, 'Media stream created');
+        //Firefox loses the audio input stream every five seconds
+        // To fix added the input to window.source
+        window.source = input;
+
+        // make the analyser available in window context
+        window.userSpeechAnalyser = audioContext.createAnalyser();
+        input.connect(window.userSpeechAnalyser);
+
+        config.rafCallback();
+      }
       recorder = new Recorder(input, { workerPath : config.recorderWorkerPath });
       config.onEvent(MSG_INIT_RECORDER, 'Recorder initialized');
+
     }
 
     function socketSend(item) {
@@ -287,17 +300,24 @@
       // Start recording only if the socket becomes open
       ws.onopen = function(e) {
         intervalKey = setInterval(function() {
-          if (config.audioSourceIsMic) {
+          // debugger;
+          // if (config.audioUploaded) {
+          //   let blob = config.getAudioBlob();
+          //   socketSend(blob);
+          // } else {
             recorder.export16kMono(function(blob) {
+              // console.log(blob)
+              // config.onInterval(blob);
               socketSend(blob);
               recorder.clear();
             }, 'audio/x-raw');
-          } else {
-            socketSend(config.getAudioBlob());
-          }
+          // }
         }, config.interval);
-        // Start recording
-        recorder.record();
+
+        // if (!config.audioUploaded) {
+          // Start recording
+          recorder.record();
+        // }
         config.onReadyForSpeech();
         config.onEvent(MSG_WEB_SOCKET_OPEN, e);
       };

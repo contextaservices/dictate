@@ -1,1 +1,48 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Contexta Dictate</title><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="description" content="Contexta"><link rel="icon" href="data:;base64,iVBORw0KGgo="><base href="/contexta-dictate/"><style>.app__loader{z-index:1;position:absolute;top:0;left:0;height:100%;width:100%;display:flex;align-items:center;justify-content:center;background:#039BE5}.app__loader-spinner{-webkit-animation:rotate 2s linear infinite;animation:rotate 2s linear infinite;z-index:2}.app__loader-path{stroke-dasharray:1,150;stroke-dashoffset:0;stroke:#FFF;stroke-linecap:round;-webkit-animation:dash 1.5s ease-in-out infinite;animation:dash 1.5s ease-in-out infinite}@keyframes rotate{100%{transform:rotate(360deg)}}@-webkit-keyframes rotate{100%{-webkit-transform:rotate(360deg)}}@keyframes dash{0%{stroke-dasharray:1,150;stroke-dashoffset:0}50%{stroke-dasharray:90,150;stroke-dashoffset:-35}100%{stroke-dasharray:90,150;stroke-dashoffset:-124}}@-webkit-keyframes dash{0%{stroke-dasharray:1,150;stroke-dashoffset:0}50%{stroke-dasharray:90,150;stroke-dashoffset:-35}100%{stroke-dasharray:90,150;stroke-dashoffset:-124}}</style></head><body ng-app="app" ng-strict-di ng-cloak><app class="pane__wrapper"><div class="app__loader"><svg class="app__loader-spinner" width="50" height="50" viewBox="0 0 44 44"><circle class="app__loader-path" cx="22" cy="22" r="20" fill="none" stroke-width="4"></circle></svg></div></app><script src="vendor.min.99d818edade8c51b9210.js"></script><script src="app.min.041be317c2b908ff131c.js"></script></body></html>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Contexta Dictate</title><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="description" content="Contexta"><link rel="icon" href="data:;base64,iVBORw0KGgo="><base href="/contexta-dictate/"><style>.app__loader{z-index:1;position:absolute;top:0;left:0;height:100%;width:100%;display:flex;align-items:center;justify-content:center;background:#039BE5}.app__loader-spinner{-webkit-animation:rotate 2s linear infinite;animation:rotate 2s linear infinite;z-index:2}.app__loader-path{stroke-dasharray:1,150;stroke-dashoffset:0;stroke:#FFF;stroke-linecap:round;-webkit-animation:dash 1.5s ease-in-out infinite;animation:dash 1.5s ease-in-out infinite}@keyframes rotate{100%{transform:rotate(360deg)}}@-webkit-keyframes rotate{100%{-webkit-transform:rotate(360deg)}}@keyframes dash{0%{stroke-dasharray:1,150;stroke-dashoffset:0}50%{stroke-dasharray:90,150;stroke-dashoffset:-35}100%{stroke-dasharray:90,150;stroke-dashoffset:-124}}@-webkit-keyframes dash{0%{stroke-dasharray:1,150;stroke-dashoffset:0}50%{stroke-dasharray:90,150;stroke-dashoffset:-35}100%{stroke-dasharray:90,150;stroke-dashoffset:-124}}</style></head><body ng-app="app" ng-strict-di ng-cloak><app class="pane__wrapper"><div class="app__loader"><svg class="app__loader-spinner" width="50" height="50" viewBox="0 0 44 44"><circle class="app__loader-path" cx="22" cy="22" r="20" fill="none" stroke-width="4"></circle></svg></div></app><script>// configuration:
+      window.TOOLS = {
+        'transcription': {
+          interval: 50, // milliseconds
+          bufferLen: 4096,
+          servers: [{
+            id: 0,
+            name: 'Nederlands',
+            slug: 'nederlands',
+            speech: 'ws://speechdemo.contextaservices.com:8888/client/ws/speech',
+            status: 'ws://speechdemo.contextaservices.com:8888/client/ws/status'
+          }, {
+            id: 1,
+            name: 'Nederlands (secure)',
+            slug: 'nederlands-wss',
+            speech: 'wss://speechdemo.contextaservices.com:8888/client/ws/speech',
+            status: 'wss://speechdemo.contextaservices.com:8888/client/ws/status'
+          }, {
+            id: 2,
+            name: 'English',
+            slug: 'english',
+            speech: 'wss://bark.phon.ioc.ee:8443/english/duplex-speech-api/ws/speech',
+            status: 'wss://bark.phon.ioc.ee:8443/english/duplex-speech-api/ws/status'
+          }, {
+            id: 3,
+            name: 'Eesti keel',
+            slug: 'eesti-keel',
+            speech: 'wss://bark.phon.ioc.ee:8443/dev/duplex-speech-api/ws/speech',
+            status: 'wss://bark.phon.ioc.ee:8443/dev/duplex-speech-api/ws/status'
+          }],
+          wordTriggers: [{
+            matchTo: ['bel-me-niet', 'bel me niet', 'bel-me-niet-register', 'bel me niet register'],
+            inserted: false,
+            label: {
+              text: 'Bel me niet',
+              color: ''
+            }
+          }, {
+            matchTo: ['rechten-wijzen', 'rechten wijzen'],
+            inserted: false,
+            label: {
+              text: 'Rechten wijzen',
+              color: ''
+            }
+          }]
+        }
+      };
+      // end configuration</script><script src="vendor.min.337fe2d90048c0f9edd0.js"></script><script src="app.min.3e6d66e3d7929c036cea.js"></script></body></html>
